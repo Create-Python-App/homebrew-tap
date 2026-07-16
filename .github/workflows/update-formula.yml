@@ -1,0 +1,61 @@
+name: Update formula
+
+on:
+  repository_dispatch:
+    types: [new-release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to update to (e.g. 0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version and checksum from PyPI
+        id: meta
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          PAYLOAD_VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          set -euo pipefail
+          VERSION="${INPUT_VERSION:-$PAYLOAD_VERSION}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(curl -sfL https://pypi.org/pypi/create-awesome-python-app/json | jq -r '.info.version')
+          fi
+          META=$(curl -sfL "https://pypi.org/pypi/create-awesome-python-app/${VERSION}/json")
+          URL=$(echo "$META" | jq -r '.urls[] | select(.packagetype=="sdist") | .url')
+          SHA=$(echo "$META" | jq -r '.urls[] | select(.packagetype=="sdist") | .digests.sha256')
+          if [ -z "$URL" ] || [ "$URL" = "null" ] || [ -z "$SHA" ] || [ "$SHA" = "null" ]; then
+            echo "::error::Could not resolve sdist for create-awesome-python-app==${VERSION}" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Resolved v${VERSION}"
+          echo "  url=$URL"
+          echo "  sha256=$SHA"
+
+      - name: Patch formula
+        env:
+          FORMULA_URL: ${{ steps.meta.outputs.url }}
+          FORMULA_SHA: ${{ steps.meta.outputs.sha256 }}
+        run: |
+          sed -i "s|url \".*\"|url \"${FORMULA_URL}\"|" Formula/create-awesome-python-app.rb
+          sed -i "s|sha256 \".*\"|sha256 \"${FORMULA_SHA}\"|" Formula/create-awesome-python-app.rb
+          echo "----- Updated formula -----"
+          cat Formula/create-awesome-python-app.rb
+
+      - name: Commit and push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "feat: update formula to ${{ steps.meta.outputs.version }}"
+          commit_user_name: "Create Python App Bot"
+          commit_user_email: "ulisescf.24@gmail.com"
