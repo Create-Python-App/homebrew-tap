@@ -29,7 +29,21 @@ jobs:
           if [ -z "$VERSION" ]; then
             VERSION=$(curl -sfL https://pypi.org/pypi/create-awesome-python-app/json | jq -r '.info.version')
           fi
-          META=$(curl -sfL "https://pypi.org/pypi/create-awesome-python-app/${VERSION}/json")
+
+          META=""
+          for attempt in $(seq 1 24); do
+            if META=$(curl -sfL "https://pypi.org/pypi/create-awesome-python-app/${VERSION}/json"); then
+              URL=$(echo "$META" | jq -r '.urls[] | select(.packagetype=="sdist") | .url')
+              SHA=$(echo "$META" | jq -r '.urls[] | select(.packagetype=="sdist") | .digests.sha256')
+              if [ -n "$URL" ] && [ "$URL" != "null" ] && [ -n "$SHA" ] && [ "$SHA" != "null" ]; then
+                break
+              fi
+            fi
+            echo "::warning::PyPI not ready for create-awesome-python-app==${VERSION} (attempt ${attempt}/24); retrying in 15s"
+            sleep 15
+            META=""
+          done
+
           URL=$(echo "$META" | jq -r '.urls[] | select(.packagetype=="sdist") | .url')
           SHA=$(echo "$META" | jq -r '.urls[] | select(.packagetype=="sdist") | .digests.sha256')
           if [ -z "$URL" ] || [ "$URL" = "null" ] || [ -z "$SHA" ] || [ "$SHA" = "null" ]; then
