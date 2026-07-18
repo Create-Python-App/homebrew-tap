@@ -32,3 +32,11 @@ brew upgrade create-awesome-python-app
 ---
 
 > **Other install methods:** [PyPI](https://pypi.org/project/create-awesome-python-app/) · [AUR](https://aur.archlinux.org/packages/create-awesome-python-app) · [GitHub](https://github.com/Create-Python-App/create-python-app)
+
+## 👥 Contributors
+
+<a href="https://github.com/Create-Python-App/homebrew-tap/contributors">
+  <img src="https://contrib.rocks/image?repo=Create-Python-App/homebrew-tap"/>
+</a>
+
+Made with [contributors-img](https://contrib.rocks).
