@@ -1,5 +1,7 @@
 # Create-Python-App Homebrew Tap
 
+[![Discord](https://img.shields.io/discord/1527933660764831825?label=Discord&logo=discord&logoColor=white)](https://discord.gg/dwFTsR7fK2)
+
 Homebrew formula for [create-awesome-python-app](https://github.com/Create-Python-App/create-python-app).
 
 ## Install
