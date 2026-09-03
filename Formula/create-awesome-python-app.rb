@@ -26,8 +26,9 @@ class CreateAwesomePythonApp < Formula
   def caveats
     <<~EOS
       This formula installs the Homebrew-managed `create-awesome-python-app`.
-      If you also use `pipx` or `uvx`, avoid installing the same tool via both
-      managers to prevent version conflicts.
+      If you also use `pip`, `pipx`, or `uvx`, avoid installing the same tool
+      via multiple managers to prevent version conflicts.
+      Example pip: `pip install create-awesome-python-app`
       Example pipx: `pipx install create-awesome-python-app`
       Example uvx: `uvx create-awesome-python-app@latest`
     EOS
