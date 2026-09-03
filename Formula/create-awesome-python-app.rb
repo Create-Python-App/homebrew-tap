@@ -18,5 +18,18 @@ class CreateAwesomePythonApp < Formula
 
   test do
     assert_match version.to_s, shell_output("#{bin}/create-awesome-python-app --version")
+    help = shell_output("#{bin}/create-awesome-python-app --help")
+    assert_includes help, "create-awesome-python-app"
+    assert_includes help, "list-templates"
+  end
+
+  def caveats
+    <<~EOS
+      This formula installs the Homebrew-managed `create-awesome-python-app`.
+      If you also use `pipx` or `uvx`, avoid installing the same tool via both
+      managers to prevent version conflicts.
+      Example pipx: `pipx install create-awesome-python-app`
+      Example uvx: `uvx create-awesome-python-app@latest`
+    EOS
   end
 end
