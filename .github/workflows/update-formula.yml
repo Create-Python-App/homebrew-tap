@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update:
@@ -69,12 +70,10 @@ jobs:
 
       # Branch protection on main forbids direct pushes (and requires the
       # "Formula lint" check), so automation ships the bump as a pull request.
-      # PR creation requires a classic PAT with repo scope stored as the
-      # TAP_RELEASE_PAT secret (used automatically when present): the org
-      # policy blocks GITHUB_TOKEN from creating pull requests, so without
-      # the secret this step fails after pushing the automation branch.
-      # Owner setup: create PAT -> repo Settings -> Secrets -> Actions ->
-      # New repository secret named TAP_RELEASE_PAT.
+      # PR creation uses GITHUB_TOKEN (org allows Actions to create PRs and
+      # the workflow grants pull-requests: write). A classic PAT with repo
+      # scope stored as the TAP_RELEASE_PAT secret is used automatically when
+      # present, as a fallback.
       - name: Open update pull request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
