@@ -67,9 +67,38 @@ jobs:
           echo "----- Updated formula -----"
           cat Formula/create-awesome-python-app.rb
 
-      - name: Commit and push
-        uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7.2.0
-        with:
-          commit_message: "feat: update formula to ${{ steps.meta.outputs.version }}"
-          commit_user_name: "Create Python App Bot"
-          commit_user_email: "ulisescf.24@gmail.com"
+      # Branch protection on main forbids direct pushes (and requires the
+      # "Formula lint" check), so automation ships the bump as a pull request.
+      # PR creation needs either the org/repo setting "Allow GitHub Actions to
+      # create and approve pull requests" enabled, or a classic PAT with
+      # repo scope stored as the TAP_RELEASE_PAT secret (used automatically
+      # when present).
+      - name: Open update pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAP_RELEASE_PAT: ${{ secrets.TAP_RELEASE_PAT }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -n "${TAP_RELEASE_PAT:-}" ]; then
+            GH_TOKEN="${TAP_RELEASE_PAT}"
+          fi
+          export GH_TOKEN
+          BRANCH="automation/formula-${VERSION}"
+          git config user.name "Create Python App Bot"
+          git config user.email "ulisescf.24@gmail.com"
+          git checkout -B "$BRANCH"
+          git add Formula/create-awesome-python-app.rb
+          if git diff --cached --quiet; then
+            echo "Formula already current for v${VERSION}; nothing to do."
+            exit 0
+          fi
+          git commit -m "feat: update formula to ${VERSION}"
+          git push --force-with-lease origin "$BRANCH"
+          if [ "$(gh pr list --head "$BRANCH" --json number --jq 'length')" -gt 0 ]; then
+            echo "Update PR already open for $BRANCH"
+            exit 0
+          fi
+          gh pr create --base main --head "$BRANCH" \
+            --title "feat: update formula to ${VERSION}" \
+            --body "Automated formula bump to create-awesome-python-app ${VERSION} (sdist URL + sha256 resolved from PyPI). Safe to merge once Formula lint is green."
