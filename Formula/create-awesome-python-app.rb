@@ -1,8 +1,8 @@
 class CreateAwesomePythonApp < Formula
   desc "Composable scaffolding CLI for production-ready Python apps"
   homepage "https://github.com/Create-Python-App/create-python-app"
-  url "https://files.pythonhosted.org/packages/9c/96/f7a59ebd49595e38bb468784c4d503b1602767b10b84bf66fb712867641e/create_awesome_python_app-0.3.1.tar.gz"
-  sha256 "f16fb07d0f201f3f02d1d26e071cd366094dcbd975810b2bbc575400c5958d7c"
+  url "https://files.pythonhosted.org/packages/13/20/cc78c3133863307cc268fc2413e16625966f4f5944e67c086027b23888fb/create_awesome_python_app-0.3.2.tar.gz"
+  sha256 "277ae205a3dbc29fb68d5e0d837f5de658801a0beae176ac759e0b93be7104e9"
   license "MIT"
 
   depends_on "python@3.12"
